@@ -2,8 +2,7 @@ const fftt = require("./../services/fftt.service");
 
 module.exports.authenticate = async (req, res, next) => {
     try {
-        fftt.login();
-
+        fftt.login()
         next();
     } catch (error) {
         console.log(error);
