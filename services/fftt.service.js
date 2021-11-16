@@ -5,37 +5,51 @@ const parser = require("fast-xml-parser");
 
 global.serial = null;
 
-login = async () => {
-    generateSerial();
+login = () => {
+    return new Promise((resolve, reject) => {
 
-    let params = {};
+        generateSerial();
 
-    params['serie'] = serial;
-    params['id'] = process.env.FFTT_APP_ID;
-    params['tm'] = dayjs().format('YYYYMMDDHHmmssSSS').toString();
-    params['tmc'] = crypto.createHmac('sha1', params['tm'].toString()).update(crypto.createHash('md5').update(process.env.FFTT_APP_KEY).digest('hex')).digest('hex');
-
-    let urlParams = new URLSearchParams({
-        serie: params['serie'],
-        id: params['id'],
-        tm: params['tm'],
-        tmc: params['tmc']
-    });
-
-    axios.get(process.env.FFTT_API_URL_V2 +'/xml_initialisation.php?'+ urlParams.toString()).then((response) => {
-        if (!response.data) {
-            throw "Bad response from API";
+        if (!process.env.FFTT_API_URL_V2 || !process.env.FFTT_APP_ID || !process.env.FFTT_APP_KEY) {
+            reject("Invalid APP_ID or APP_KEY");
         }
 
-        let output = parser.parse(response.data);
-        if (output.initialisation.appli !== 1) {
-            throw "Invalid credentials";
-        }
+        let params = {};
+        let key = crypto.createHash('md5').update(process.env.FFTT_APP_KEY).digest('hex');
 
-        return true;
-    }).catch((error) => {
-        console.log(error);
-        throw error;
+        params['serie'] = serial;
+        params['id'] = process.env.FFTT_APP_ID;
+        params['tm'] = dayjs().format('YYYYMMDDHHmmssSSS').toString();
+        params['tmc'] = crypto.createHmac('sha1', key).update(params['tm']).digest('hex');
+
+        let urlParams = new URLSearchParams({
+            serie: params['serie'],
+            id: params['id'],
+            tm: params['tm'],
+            tmc: params['tmc']
+        });
+
+        console.log(params['tm']);
+
+        console.log("[FFTT API] API Call :", process.env.FFTT_API_URL_V2 +'/xml_initialisation.php?'+ urlParams.toString());
+        axios.get(process.env.FFTT_API_URL_V2 +'/xml_initialisation.php?'+ urlParams.toString()).then((response) => {
+            console.log("[FFTT API] API Response : \n", response.data);
+
+            if (!response.data) {
+                reject("Bad response from API");
+            }
+
+            let output = parser.parse(response.data);
+            if (output.initialisation.appli !== 1) {
+                reject("Invalid credentials");
+            }
+
+            console.log("[FFTT API]", "Login OK");
+            resolve();
+        }).catch((error) => {
+            console.log("[FFTT API] API Response : \n", error.response.data);
+            reject(error.response);
+        });
     });
 }
 
