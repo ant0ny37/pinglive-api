@@ -1,4 +1,5 @@
 const fftt = require("./../services/fftt.service");
+const utf8 = require("utf8");
 
 module.exports.authenticate = async (req, res, next) => {
     try {
@@ -6,6 +7,6 @@ module.exports.authenticate = async (req, res, next) => {
         next();
     }
     catch (error) {
-        res.status(401).json({"result": false});
+        res.status(error.erreurs.code).json({"result": false, "error": unescape(encodeURIComponent(error.erreurs.erreur))});
     }
 };

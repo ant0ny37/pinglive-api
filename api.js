@@ -15,23 +15,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use(function (req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin',  '*');
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'Origin, X-Requested-With, X-HTTP-Method-Override, Content, Accept, Content-Type, Authorization'
-    );
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
     next();
 });
 
 const http = server.createServer(app);
 
 http.listen(port, () => {
-    console.log('/////////////////////////////')
-    console.log('// Pinglive API');
-    console.log(`// "${packageJson.name}" started on ${port}`)
-    console.log('////////////////////////');
+    console.log(`"${packageJson.name}" started on ${port}`)
 });
 
 // STATIC FOLDERS
